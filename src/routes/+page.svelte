@@ -17,12 +17,12 @@
 -->
 <div class="ui">
 	<UI />
-    <div>test</div>
+	<div>test</div>
 </div>
 
 <style>
 	.graph {
-        z-index: 1;
+		z-index: 1;
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -31,9 +31,7 @@
 		overflow: hidden;
 	}
 
-    .ui {
-        position: absolute;
-        z-index: 20;
-        overflow: hidden;
-    }
+	.ui {
+		overflow: hidden;
+	}
 </style>

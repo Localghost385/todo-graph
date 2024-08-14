@@ -15,7 +15,8 @@ export default [
 		languageOptions: {
 			globals: {
 				...globals.browser,
-				...globals.node
+				...globals.node,
+				VITE_DEV: 'readonly'
 			}
 		}
 	},
@@ -28,6 +29,6 @@ export default [
 		}
 	},
 	{
-		ignores: ['build/', '.svelte-kit/', 'dist/']
+		ignores: ['build/', '.svelte-kit/', 'dist/', 'src-tauri/']
 	}
 ];
