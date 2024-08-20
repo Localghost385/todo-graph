@@ -1,6 +1,10 @@
+<script lang="ts">
+	export let createNode: () => void;
+</script>
+
 <div class="left-ui-container">da</div>
 
-<button on:click={() => {alert('test')}} class="right-ui-container">+</button>
+<button on:click={createNode} class="right-ui-container">+</button>
 
 <style>
 	.left-ui-container {
@@ -34,6 +38,6 @@
 	}
 
 	.right-ui-container:active {
-		background-color: #EDEEF0;
+		background-color: #edeef0;
 	}
 </style>

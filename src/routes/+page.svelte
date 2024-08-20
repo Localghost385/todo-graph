@@ -1,6 +1,15 @@
-<script>
+<script lang="ts">
+	import type { SvelteComponent } from 'svelte';
 	import ForceGraph from './ForceGraph.svelte';
 	import UI from './UI.svelte';
+
+	let forceGraph: SvelteComponent;
+
+	function createNode() {
+		console.log('createNode');
+		forceGraph.createNode('Z');
+		forceGraph.createLink('A', 'Z');
+	}
 </script>
 
 <!-- 
@@ -8,7 +17,7 @@
 █ ▀█ ▀▄▀ █▄▀ █▄▄ ▄██ 
 -->
 <div class="graph">
-	<ForceGraph />
+	<ForceGraph bind:this={forceGraph} />
 </div>
 
 <!--
@@ -16,7 +25,7 @@
 ▀▄█ █ 
 -->
 <div class="ui">
-	<UI />
+	<UI {createNode} />
 	<div>test</div>
 </div>
 
@@ -35,3 +44,4 @@
 		overflow: hidden;
 	}
 </style>
+

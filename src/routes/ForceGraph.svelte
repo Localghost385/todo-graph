@@ -4,69 +4,41 @@
 
 	let svgElement: SVGSVGElement | null = null;
 
-	onMount(() => {
-		if (!svgElement) return;
+	interface Node {
+		id: string;
+		x?: number;
+		y?: number;
+		fx?: number | null;
+		fy?: number | null;
+		vx?: number;
+		vy?: number;
+	}
 
-		interface Node {
-			id: string;
-			x?: number;
-			y?: number;
-			fx?: number | null;
-			fy?: number | null;
-			vx?: number;
-			vy?: number;
-		}
+	interface Link {
+		source: string;
+		target: string;
+		value?: number;
+	}
 
-		interface Link {
-			source: string;
-			target: string;
-			value?: number;
-		}
+	const nodes: Node[] = [
+		{ id: 'A', vx: Math.random() * 2 - 1, vy: Math.random() * 2 - 1 },
+		{ id: 'B', vx: Math.random() * 2 - 1, vy: Math.random() * 2 - 1 },
+		{ id: 'C', vx: Math.random() * 2 - 1, vy: Math.random() * 2 - 1 },
+	];
 
-		const nodes: Node[] = [
-			{ id: 'A', vx: Math.random() * 2 - 1, vy: Math.random() * 2 - 1 },
-			{ id: 'B', vx: Math.random() * 2 - 1, vy: Math.random() * 2 - 1 },
-			{ id: 'C', vx: Math.random() * 2 - 1, vy: Math.random() * 2 - 1 },
-			{ id: 'D', vx: Math.random() * 2 - 1, vy: Math.random() * 2 - 1 },
-			...Array.from({ length: 10 }, (_, i) => ({
-				id: String.fromCharCode(65 + i + 4),
-				vx: Math.random() * 2 - 1,
-				vy: Math.random() * 2 - 1
-			})).map((d, i) => ({
-				...d,
-				x: (i % 5) * 50,
-				y: Math.floor(i / 5) * 50
-			}))
-		];
+	const links: Link[] = [
+		{ source: 'A', target: 'B' },
+		{ source: 'A', target: 'C' },
+		{ source: 'B', target: 'C' },
+	];
 
-		const links: Link[] = [
-			{ source: 'A', target: 'B' },
-			{ source: 'A', target: 'C' },
-			{ source: 'A', target: 'D' },
-			{ source: 'B', target: 'C' },
-			{ source: 'C', target: 'D' },
-			...Array.from({ length: 10 }, (_, i) => ({
-				source: String.fromCharCode(65 + i + 4),
-				target: String.fromCharCode(65 + (i % 4) + 1)
-			})),
-			{ source: 'L', target: 'J' }
-		];
+	let width = 1;
+	let height = 1;
 
-		let width = window.innerWidth;
-		let height = window.innerHeight;
+	let simulation: d3.Simulation<Node, Link>;
 
-		const svg = d3
-			.select(svgElement)
-			.attr('width', '100%')
-			.attr('height', '100%')
-			.attr('viewBox', `0 0 ${width} ${height}`)
-			.attr('preserveAspectRatio', 'xMidYMid meet');
-
-		const zoom = d3.zoom().scaleExtent([0.5, 32]).interpolate(d3.interpolate).on('zoom', zoomed);
-
-		svg.call(zoom);
-
-		const simulation = d3
+	function initializeSimulation() {
+		simulation = d3
 			.forceSimulation(nodes)
 			.velocityDecay(0.6)
 			.force(
@@ -80,8 +52,53 @@
 			.force('center', d3.forceCenter(width / 2, height / 2))
 			.alphaDecay(0.05)
 			.alphaTarget(0.2);
+	}
 
-		const link = svg
+	function dragHandlers(simulation: d3.Simulation<Node, Link>) {
+		function dragstarted(event: d3.D3DragEvent<SVGElement, Node, Node>, d: Node) {
+			if (!event.active) simulation.alphaTarget(0.3).restart();
+			d.fx = d.x;
+			d.fy = d.y;
+			d.vx = 0;
+			d.vy = 0;
+		}
+
+		function dragged(event: d3.D3DragEvent<SVGElement, Node, Node>, d: Node) {
+			d.fx = event.x;
+			d.fy = event.y;
+		}
+
+		function dragended(event: d3.D3DragEvent<SVGElement, Node, Node>, d: Node) {
+			if (!event.active) simulation.alphaTarget(0);
+			d.fx = null;
+			d.fy = null;
+			d.vx = Math.random() * 2 - 1;
+			d.vy = Math.random() * 2 - 1;
+		}
+
+		return d3
+			.drag<SVGElement, Node>()
+			.on('start', dragstarted)
+			.on('drag', dragged)
+			.on('end', dragended);
+	}
+
+	function createGridDots(svg: d3.Selection<SVGSVGElement, unknown, null, undefined>) {
+		const gridDots = svg.append('g').attr('class', 'grid-dots');
+		for (let x = 0; x <= width; x += 20) {
+			for (let y = 0; y <= height; y += 20) {
+				gridDots
+					.append('circle')
+					.attr('cx', x)
+					.attr('cy', y)
+					.attr('r', 0.6)
+					.attr('fill', '#41445a');
+			}
+		}
+	}
+
+	function createLinks(svg: d3.Selection<SVGSVGElement, unknown, null, undefined>) {
+		return svg
 			.append('g')
 			.attr('stroke', '#41445a')
 			.attr('stroke-opacity', 0.6)
@@ -89,7 +106,9 @@
 			.data(links)
 			.join('line')
 			.attr('stroke-width', (d: Link) => Math.sqrt(d.value || 1));
+	}
 
+	function createNodes(svg: d3.Selection<SVGSVGElement, unknown, null, undefined>, link: d3.Selection<SVGGElement, Link, SVGGElement, unknown>) {
 		const node = svg
 			.append('g')
 			.attr('stroke', '#41445a')
@@ -97,7 +116,7 @@
 			.selectAll('g')
 			.data(nodes)
 			.join('g')
-			.call(drag(simulation));
+			.call(dragHandlers(simulation));
 
 		node.append('circle').attr('r', 10).attr('fill', '#ffffff');
 
@@ -119,7 +138,6 @@
 				.attr('x2', (d) => (d.vx ? d.vx * 10 : 0))
 				.attr('y2', (d) => (d.vy ? d.vy * 10 : 0));
 
-			// create a red circle around each node showing their force
 			node
 				.append('circle')
 				.attr('stroke', 'red')
@@ -129,35 +147,6 @@
 				.attr('fill', 'none');
 		}
 
-		function drag(simulation: d3.Simulation<Node, Link>) {
-			function dragstarted(event: d3.D3DragEvent<SVGElement, Node, Node>, d: Node) {
-				if (!event.active) simulation.alphaTarget(0.3).restart();
-				d.fx = d.x;
-				d.fy = d.y;
-				d.vx = 0;
-				d.vy = 0;
-			}
-
-			function dragged(event: d3.D3DragEvent<SVGElement, Node, Node>, d: Node) {
-				d.fx = event.x;
-				d.fy = event.y;
-			}
-
-			function dragended(event: d3.D3DragEvent<SVGElement, Node, Node>, d: Node) {
-				if (!event.active) simulation.alphaTarget(0);
-				d.fx = null; // Set fx and fy to null to allow free movement
-				d.fy = null;
-				d.vx = Math.random() * 2 - 1; // Give the node a small random velocity
-				d.vy = Math.random() * 2 - 1;
-			}
-
-			return d3
-				.drag<SVGElement, Node>()
-				.on('start', dragstarted)
-				.on('drag', dragged)
-				.on('end', dragended);
-		}
-
 		simulation.on('tick', () => {
 			link
 				.attr('x1', (d: Link) => (d.source as unknown as Node).x ?? 0)
@@ -165,17 +154,36 @@
 				.attr('x2', (d: Link) => (d.target as unknown as Node).x ?? 0)
 				.attr('y2', (d: Link) => (d.target as unknown as Node).y ?? 0);
 
-			node
-				.attr('transform', (d: Node) => `translate(${d.x ?? 0},${d.y ?? 0})`)
-				.selectAll('line')
+			node.attr('transform', (d: Node) => `translate(${d.x ?? 0},${d.y ?? 0})`);
+
+			node.selectAll('line')
 				.attr('x2', (d) => (d.vx ? d.vx * 10 : 0))
 				.attr('y2', (d) => (d.vy ? d.vy * 10 : 0));
 		});
+	}
+
+	function initializeSvg() {
+		if (!svgElement) return;
+
+		const svg = d3
+			.select(svgElement)
+			.attr('width', '100%')
+			.attr('height', '100%')
+			.attr('viewBox', `0 0 ${width} ${height}`)
+			.attr('preserveAspectRatio', 'xMidYMid meet');
+
+		createGridDots(svg);
+
+		const zoom = d3.zoom().scaleExtent([0.5, 32]).interpolate(d3.interpolate).on('zoom', zoomed);
+		svg.call(zoom);
+
+		const link = createLinks(svg);
+		createNodes(svg, link);
 
 		function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>) {
 			svg
 				.selectAll('g')
-				.filter((_, i) => i < 2)
+				.filter((_, i) => i < 3)
 				.attr('transform', event.transform);
 		}
 
@@ -194,6 +202,14 @@
 		return () => {
 			window.removeEventListener('resize', handleResize);
 		};
+	}
+
+	onMount(() => {
+		width = window.innerWidth;
+		height = window.innerHeight;
+
+		initializeSimulation();
+		initializeSvg();
 	});
 </script>
 
