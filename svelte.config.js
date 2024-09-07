@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import adapter from '@sveltejs/adapter-static'; // <-- adapter-static replaces adapter-auto
 import preprocess from 'svelte-preprocess';
 
@@ -16,3 +17,5 @@ const config = {
 };
 
 export default config;
+
+/* c8 ignore stop */

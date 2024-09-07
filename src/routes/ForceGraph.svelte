@@ -1,7 +1,8 @@
+<!-- /* c8 ignore start */ -->
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type * as nodetypes from './nodetypes';
-	import { createChart } from './forcegraph';
+	import type * as nodetypes from '$lib/types/nodetypes';
+	import { createChart } from '$lib/chart/index';
 
 	let svgElement: SVGSVGElement | null = null;
 
@@ -11,4 +12,6 @@
 		createChart(svgElement, file);
 	});
 </script>
-<svg class="w-full h-full" bind:this={svgElement}></svg>
+
+<svg class="h-full w-full" bind:this={svgElement}></svg>
+<!-- /* c8 ignore stop */ -->

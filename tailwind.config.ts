@@ -1,3 +1,4 @@
+/* c8 ignore start */
 import { join } from 'path';
 import type { Config } from 'tailwindcss';
 import { canvas } from './skeletontheme';
@@ -27,3 +28,4 @@ const config = {
 } satisfies Config;
 
 export default config;
+/* c8 ignore stop */

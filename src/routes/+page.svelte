@@ -1,3 +1,4 @@
+<!-- /* c8 ignore start */ -->
 <script lang="ts">
 	import UI from './UI.svelte';
 	import ForceGraph from './ForceGraph.svelte';
@@ -21,3 +22,4 @@
 		<!-- <div>tst</div> -->
 	</div>
 </div>
+<!-- /* c8 ignore stop */ -->
